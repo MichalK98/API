@@ -16,43 +16,45 @@ const connection = mysql.createPool({
 });
 
 // Return index.html
-server.get("/", (req, result) => {
-    result.sendFile(__dirname + '/index.html');
+server.get("/", (req, res) => {
+    res.sendFile(__dirname + '/index.html');
 });
 
 // ------------------------
 // GET all Users
-server.get("/users", (req, result) => {
+server.get("/users", (req, res) => {
     connection.query(`
     SELECT
         *
     FROM
         users;
     `, (err, rows) => {
-        result.json(rows);
+        res.json({
+            users: rows
+        });
     })
 });
 
 // GET user by Id
-server.get("/users/:id", (req, result) => {
+server.get("/users/:id", (req, res) => {
     const userId = req.params.id;
 
     connection.query(`
-    SELECT 
-        * 
-    FROM 
-        users 
-    WHERE 
+    SELECT
+        *
+    FROM
+        users
+    WHERE
         id=:userId;
     `, {userId}, (err, rows) => {
         if (rows.length == 0) {
-            result.json({
+            res.json({
                 errors: [
                     "No user found!"
                 ]
             });
         } else {
-            result.json({
+            res.json({
                 user: rows[0]
             });
         }
@@ -60,12 +62,12 @@ server.get("/users/:id", (req, result) => {
 });
 
 // POST
-server.post("/users", (req, result) => {
+server.post("/users", (req, res) => {
     const user = req.body;
 
     connection.query(`
-    INSERT INTO 
-        users 
+    INSERT INTO
+        users
         (
             firstName,
             lastName,
@@ -79,46 +81,46 @@ server.post("/users", (req, result) => {
     `, {
         ...user
     }, (err, rows) => {
-        result.json(rows);
+        res.json(rows);
     });
 });
 
 // UPDATE
-server.put("/users/:id", (req, result) => {
+server.put("/users/:id", (req, res) => {
     const user = req.body;
     const userId = req.params.id;
 
     connection.query(`
-    UPDATE 
+    UPDATE
         users
-    SET 
+    SET
         firstName=:firstName,
         lastName=:lastName,
         age=:age
-    WHERE 
+    WHERE
         id= :userId;
     `, {
         ...user,
         userId
     }, (err, rows) => {
-        result.json(rows);
+        res.json(rows);
     });
 });
 
 // DELETE
-server.delete("/users/:id", (req, result) => {
+server.delete("/users/:id", (req, res) => {
     const userId = req.params.id;
 
     connection.query(`
-    DELETE FROM 
+    DELETE FROM
         users
-    WHERE 
+    WHERE
         id=:userId;
     `, {userId}, (err, result) => {
-        result.json({
+        res.json({
             success: !!result.affectedRows
         });
-    })
+    });
 });
 // ------------------------
 
